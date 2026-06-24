@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:13
+    container_name: taski_db
+    env_file:
+      - .env
+    volumes:
+      - taski_pg_data:/var/lib/postgresql/data
+    restart: always
+
+  backend:
+    build: ./backend
+    container_name: taski_backend
+    env_file:
+      - .env
+    volumes:
+      - taski_static:/app/static
+      - taski_media:/app/media
+    depends_on:
+      - db
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: taski_frontend
+    volumes:
+      - taski_static:/app/dist/static
+    restart: always
+
+  gateway:
+    build: ./nginx
+    container_name: taski_gateway
+    ports:
+      - "8000:80"
+    volumes:
+      - taski_static:/static
+      - taski_media:/media
+    depends_on:
+      - backend
+      - frontend
+    restart: always
+
+volumes:
+  taski_pg_data:
+  taski_static:
+  taski_media:
+
